@@ -1,32 +1,39 @@
 import React from 'react';
 
 interface EnvSelectorProps {
-    environments: { id: string, name: string }[];
-    selectedEnvIds: string[];
-    onToggle: (envId: string) => void;
+    environments: { id: number, name: string }[];
+    selectedEnvNames: string[];
+    onToggle: (envName: string) => void;
 }
 
-const EnvSelector: React.FC<EnvSelectorProps> = ({ environments, selectedEnvIds, onToggle }) => {
+const EnvSelector: React.FC<EnvSelectorProps> = ({ environments, selectedEnvNames, onToggle }) => {
     return (
         <div className="sidebar-section">
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#4a5568' }}>Filter: </span>
-                <select style={{ marginLeft: '10px', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '2px 5px', fontSize: '0.85rem' }}>
-                    <option>Environment</option>
-                </select>
+            <h3 className="sidebar-title">Select Environments</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {environments.filter((v, i, a) => a.findIndex(t => t.name === v.name) === i).map((env) => {
+                    const isActive = selectedEnvNames.includes(env.name);
+                    return (
+                        <button
+                            key={env.id}
+                            onClick={() => onToggle(env.name)}
+                            className={`btn ${isActive ? 'btn-primary' : 'btn-ghost'}`}
+                            style={{
+                                width: '100%',
+                                justifyContent: 'flex-start',
+                                textAlign: 'left',
+                                padding: '0.6rem 1rem',
+                                border: isActive ? 'none' : '1px solid #e2e8f0',
+                                boxShadow: isActive ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none',
+                                fontWeight: isActive ? 600 : 500
+                            }}
+                        >
+                            <span style={{ marginRight: '8px' }}>{isActive ? '●' : '○'}</span>
+                            {env.name}
+                        </button>
+                    );
+                })}
             </div>
-            <ul className="filter-list">
-                {environments.map((env) => (
-                    <li key={env.id} className="filter-item" onClick={() => onToggle(env.id)}>
-                        <input
-                            type="checkbox"
-                            checked={selectedEnvIds.includes(env.id)}
-                            onChange={() => { }} // Controlled by li click
-                        />
-                        {env.name}
-                    </li>
-                ))}
-            </ul>
         </div>
     );
 };

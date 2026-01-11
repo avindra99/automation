@@ -1,19 +1,26 @@
 import { NextResponse } from "next/server";
-import { addApplication, updateApplication } from "@/data/mockData";
+
+const JAVA_BACKEND_URL = "http://localhost:8081/api/applications";
 
 export async function POST(request: Request) {
-    const body = await request.json();
-    const { action, id, name, vastId, envs } = body;
+    try {
+        const body = await request.json();
 
-    if (action === "add") {
-        const newApp = addApplication(name, vastId, envs);
-        return NextResponse.json({ success: true, app: newApp });
+        const res = await fetch(JAVA_BACKEND_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            return NextResponse.json({ error: errorText }, { status: res.status });
+        }
+
+        const data = await res.json();
+        return NextResponse.json({ success: true, app: data });
+    } catch (error: any) {
+        console.error("Failed to post to Java backend:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    if (action === "edit") {
-        const success = updateApplication(id, name, vastId);
-        return NextResponse.json({ success });
-    }
-
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 }

@@ -2,17 +2,13 @@
   --background: #f4f7f9;
   --foreground: #333333;
   --primary: #1e40af;
-  /* Deep Blue Header/Buttons */
   --secondary: #3b82f6;
-  /* Lighter Blue */
   --sidebar-bg: #ffffff;
   --sidebar-text: #4a5568;
   --header-bg: #1e40af;
   --header-text: #ffffff;
   --border: #e2e8f0;
   --card-bg: #ffffff;
-
-  /* Status Colors from Image */
   --status-outdated-bg: #f6ad55;
   --status-outdated-text: #ffffff;
   --status-uptodate-bg: #48bb78;
@@ -25,7 +21,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--background);
   color: var(--foreground);
 }
@@ -34,7 +30,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Layout */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -73,40 +68,18 @@ body {
   overflow: hidden;
 }
 
-.sidebar {
-  width: 240px;
-  background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-}
-
 .content-area {
   flex: 1;
-  padding: 2rem;
+  padding: 2.5rem;
   overflow-y: auto;
+  background: #f8fafc;
 }
 
-/* Sections */
-.sidebar-section {
-  margin-bottom: 2rem;
-}
-
-.sidebar-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #718096;
-  text-transform: uppercase;
-  margin-bottom: 1rem;
-}
-
-/* Buttons */
 .btn {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.2s;
@@ -117,164 +90,120 @@ body {
   color: white;
 }
 
-.btn-primary:hover {
-  background-color: #1d4ed8;
-}
-
-.btn-batch {
-  background-color: #1e40af;
-  color: white;
-  padding: 0.75rem 2rem;
-  font-weight: 600;
-}
-
 .btn-ghost {
-  background: transparent;
+  background: white;
   color: var(--primary);
   border: 1px solid var(--border);
 }
 
-/* Table */
-.table-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.table-header {
-  padding: 1.25rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.table-header h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  background-color: #f8fafc;
-  padding: 1rem;
-  text-align: left;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #718096;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-}
-
-td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
-}
-
-/* Badges */
 .badge {
   padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .status-outdated {
-  background-color: var(--status-outdated-bg);
-  color: var(--status-outdated-text);
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
 }
 
 .status-uptodate {
-  background-color: var(--status-uptodate-bg);
-  color: var(--status-uptodate-text);
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #dcfce7;
 }
 
 .status-vulnerable {
-  background-color: var(--status-vulnerable-bg);
-  color: var(--status-vulnerable-text);
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fee2e2;
 }
 
-/* Icons (Simplistic placeholder logic) */
-.icon-placeholder {
-  width: 24px;
-  height: 24px;
-  margin-right: 0.75rem;
-  vertical-align: middle;
+/* Modal Overlays with blur */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
 
-/* Footer Stats */
-.summary-bar {
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Sidebar Improvements */
+.sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
   display: flex;
-  gap: 2rem;
-  padding: 1rem 0;
-  font-size: 0.9rem;
+  flex-direction: column;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+  padding: 1.5rem;
+  height: 100%;
 }
 
-.stat-item span:first-child {
-  color: #718096;
-}
-
-.stat-item span:last-child {
-  font-weight: 700;
-  color: #2d3748;
-  margin-left: 0.5rem;
-}
-
-.stat-green {
-  color: #48bb78 !important;
-}
-
-.stat-red {
-  color: #f56565 !important;
-}
-
-/* Filter list */
-.filter-list {
-  list-style: none;
-  padding: 0;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  cursor: pointer;
-  color: var(--sidebar-text);
-  font-size: 0.9rem;
-}
-
-.filter-item input {
-  width: 16px;
-  height: 16px;
-}
-
-/* App list */
 .app-item {
-  display: flex;
-  align-items: center;
-  padding: 0.6rem 0.75rem;
-  margin-bottom: 0.25rem;
-  border-radius: 6px;
-  cursor: pointer;
-  color: var(--sidebar-text);
-  font-weight: 500;
-  font-size: 0.9rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .app-item:hover {
-  background-color: #f7fafc;
+  background-color: #f8fafc;
+  transform: translateX(4px);
 }
 
 .app-item.active {
-  background-color: #ebf4ff;
-  color: #3182ce;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  font-weight: 600;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.critical-badge {
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
