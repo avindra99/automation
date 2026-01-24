@@ -1,0 +1,33 @@
+---
+- name: "Enterprise Remediation: Java Runtime"
+  block:
+    - name: "PRE-CHECK | Verify current binary"
+      shell: "{{ install_path }}/bin/java -version 2>&1 | grep -oP 'version \"\\K[0-9._]+' | head -1"
+      register: java_v
+      failed_when: false
+
+    - name: "ASSERT | Idempotency"
+      meta: end_host
+      when: java_v.stdout == target_version
+
+    - name: "FILESYSTEM | Snapshot Backup"
+      command: "mv {{ install_path }} {{ install_path }}_backup_{{ lookup('pipe', 'date +%Y%m%d%H%M') }}"
+
+    - name: "DEPLOY | Download & Extract Tarball"
+      unarchive:
+        src: "{{ repo_url }}/jdk-{{ target_version }}.tar.gz"
+        dest: "{{ install_path | dirname }}"
+        remote_src: yes
+
+    - name: "POST-DEPLOY | System Integrity Check"
+      shell: "{{ install_path }}/bin/java -version 2>&1"
+      register: final_val
+      failed_when: target_version not in final_val.stdout
+
+  rescue:
+    - name: "FAILSAFE | Rollback Triggered"
+      command: "mv {{ install_path }}_backup_* {{ install_path }}"
+      ignore_errors: true
+    - name: "ALERT | Notify Failure"
+      fail:
+        msg: "Security remediation failed for Java. Filesystem state reverted."

@@ -1,0 +1,149 @@
+---
+- name: Verizon Middleware Patching Automation
+  hosts: all
+  become: yes
+  vars:
+    # Variables expected via --extra-vars:
+    # target_software: Apache | Java
+    # target_version: e.g., 2.4.65 or 17.0.17
+    # install_path: e.g., /apps/opt/mw/apache-2.4.62
+    # repo_url: Artifactory/Local repo URL
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+    backup_path: "{{ install_path }}_backup_{{ timestamp }}"
+
+  tasks:
+    - name: Validation Phase
+      fail:
+        msg: "Missing required variables. Ensure target_software, target_version, install_path, and repo_url are passed via --extra-vars."
+      when: target_version == "" or install_path == "" or repo_url == ""
+
+    - name: Primary Patching Block
+      block:
+        # --- IDEMPOTENCY CHECK ---
+        # Using 'shell' here because we need to pipe output to grep and extract the version string.
+        # 'command' would not support the '|' operator.
+        - name: Identify current version of {{ target_software }}
+          shell: |
+            if [ "{{ target_software }}" == "Apache" ]; then
+              {{ install_path }}/bin/httpd -v 2>/dev/null | grep -oP 'Apache/\K[0-9.]+' | head -1
+            elif [ "{{ target_software }}" == "Java" ]; then
+              {{ install_path }}/bin/java -version 2>&1 | grep -oP 'version "\K[0-9._]+' | head -1
+            fi
+          register: current_installed_version
+          failed_when: false
+          changed_when: false
+
+        - name: Verify necessity of patch
+          debug:
+            msg: "System state: {{ target_software }} is already at version {{ target_version }}. Terminating patch cycle."
+          when: current_installed_version.stdout == target_version
+
+        - name: Stop host if patch is already applied
+          meta: end_host
+          when: current_installed_version.stdout == target_version
+
+        # --- APACHE REMEDIATION LOGIC ---
+        - name: Execute Apache Upgrade Workflow
+          block:
+            - name: Graceful shutdown of Apache
+              # Using 'shell' for the '-k' flag and potential process control.
+              shell: "{{ install_path }}/bin/apachectl -k graceful-stop"
+              register: stop_result
+              ignore_errors: yes
+
+            - name: Connectivity & PID sanity check
+              # wait_for is a safer module than polling ps via shell.
+              wait_for:
+                path: "{{ install_path }}/logs/httpd.pid"
+                state: absent
+                timeout: 30
+              ignore_errors: yes
+
+            - name: Move existing directory to backup
+              # 'command' used here as it's a simple move with no shell-specific features needed.
+              command: "mv {{ install_path }} {{ backup_path }}"
+              
+            - name: Download binaries from repository
+              get_url:
+                url: "{{ repo_url }}/httpd-{{ target_version }}.tar.gz"
+                dest: "/tmp/httpd-{{ target_version }}.tar.gz"
+                mode: '0644'
+
+            - name: Extract tarball to parent directory
+              unarchive:
+                src: "/tmp/httpd-{{ target_version }}.tar.gz"
+                dest: "{{ install_path | dirname }}"
+                remote_src: yes
+
+            - name: Realign directory structure to match {{ install_path }}
+              # shell used for globbing/wildcard matching of the extracted folder.
+              shell: |
+                EXT_DIR=$(ls -d {{ install_path | dirname }}/httpd*{{ target_version }}* | head -1)
+                mv "$EXT_DIR" {{ install_path }}
+
+            - name: Restore configuration from backup cluster
+              # command used for simple recursive copy.
+              command: "cp -rp {{ backup_path }}/{{ item }} {{ install_path }}/"
+              with_items:
+                - "conf"
+                - "conf.d"
+                - "ssl"
+              ignore_errors: yes
+
+            - name: Initialize new Apache instance
+              shell: "{{ install_path }}/bin/apachectl -k start"
+
+            - name: Health check verification
+              # shell used to check process table for the specific binary path.
+              shell: "ps -ef | grep httpd | grep {{ install_path }} | grep -v grep"
+              register: ps_result
+              until: ps_result.rc == 0
+              retries: 5
+              delay: 3
+
+          when: target_software == "Apache"
+
+        # --- JAVA REMEDIATION LOGIC ---
+        - name: Execute Java Upgrade Workflow
+          block:
+            - name: Encapsulate current Java to backup
+              command: "mv {{ install_path }} {{ backup_path }}"
+
+            - name: Download JDK binary
+              get_url:
+                url: "{{ repo_url }}/jdk-{{ target_version }}.tar.gz"
+                dest: "/tmp/jdk-{{ target_version }}.tar.gz"
+
+            - name: Extract JDK to production path
+              unarchive:
+                src: "/tmp/jdk-{{ target_version }}.tar.gz"
+                dest: "{{ install_path | dirname }}"
+                remote_src: yes
+            
+            - name: Map extracted directory to target path
+              shell: |
+                EXT_DIR=$(ls -d {{ install_path | dirname }}/jdk*{{ target_version }}* | head -1)
+                mv "$EXT_DIR" {{ install_path }}
+
+            - name: Post-install validation of Java binary
+              # shell used to capture stderr (2>&1) and grep version.
+              shell: "{{ install_path }}/bin/java -version 2>&1"
+              register: java_check
+              failed_when: target_version not in java_check.stdout
+
+          when: target_software == "Java"
+
+      rescue:
+        - name: Failure Remediation (Rollback)
+          block:
+            - name: Restore original installation from backup
+              command: "rm -rf {{ install_path }}"
+              ignore_errors: yes
+
+            - name: Revert file system state
+              command: "mv {{ backup_path }} {{ install_path }}"
+              when: backup_path is defined
+              
+            - name: Terminate with diagnostic message
+              fail:
+                msg: "Patch failed for {{ target_software }}. Filesystem state has been reverted to {{ backup_path }}."

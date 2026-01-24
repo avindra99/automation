@@ -1,0 +1,14 @@
+---
+- name: Verizon Global Middleware Remediation
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  # Expected extra_vars: target_software, target_version, install_path, repo_url
+  
+  roles:
+    - role: apache_upgrade
+      when: target_software == "Apache"
+    
+    - role: java_upgrade
+      when: target_software == "Java"

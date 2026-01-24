@@ -33,12 +33,11 @@ const Dashboard = () => {
             const d = await res.json();
             setData(d);
 
-            // Set initial selected app if none selected
             if (!selectedAppId && d.applications && d.applications.length > 0) {
                 setSelectedAppId(d.applications[0].id);
             }
         } catch (error) {
-            console.error("Failed to fetch inventory:", error);
+            console.error("Connectivity issue:", error);
         }
     };
 
@@ -75,23 +74,23 @@ const Dashboard = () => {
 
     const handleDeleteApp = async (appId: number) => {
         try {
-            const res = await fetch(`/api/applications/${appId}`, {
-                method: 'DELETE',
-            });
+            const res = await fetch(`/api/applications/${appId}`, { method: 'DELETE' });
             if (res.ok) {
-                if (selectedAppId === appId) {
-                    setSelectedAppId(null);
-                }
+                if (selectedAppId === appId) setSelectedAppId(null);
                 fetchData();
-            } else {
-                alert("Failed to delete application.");
             }
         } catch (error) {
-            console.error("Delete failed:", error);
+            console.error("Operation failed:", error);
         }
     };
 
-    if (!data) return <div style={{ padding: '2rem' }}>Loading Enterprise Inventory...</div>;
+    if (!data) return (
+        <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em' }}>
+                INITIALIZING ENTERPRISE ENVIRONMENT...
+            </div>
+        </div>
+    );
 
     const filteredServers = data.servers.filter(s => {
         const env = data.environments.find(e => e.id === s.envId);
@@ -99,10 +98,7 @@ const Dashboard = () => {
     });
 
     const currentApp = data.applications.find(a => a.id === selectedAppId);
-
     const upgradesNeeded = data.servers.filter(s => s.status !== "Up to Date").length;
-    const totalServersCount = data.servers.length;
-    const upToDateCount = totalServersCount - upgradesNeeded;
 
     return (
         <div className="app-container">
@@ -117,9 +113,7 @@ const Dashboard = () => {
             {showArtifactForm && (
                 <ArtifactForm
                     onClose={() => setShowArtifactForm(false)}
-                    onUploadSuccess={() => {
-                        fetchData();
-                    }}
+                    onUploadSuccess={() => fetchData()}
                 />
             )}
 
@@ -128,69 +122,57 @@ const Dashboard = () => {
             )}
 
             <nav className="top-nav">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e293b' }}>VERIZON UPGRADE AUTOMATION</span>
-                </div>
+                <h1>VERIZON • AUTOMATION CONTROL</h1>
                 <div className="top-nav-links">
-                    <a href="#" className={activeTab === 'automation' ? 'active' : ''} onClick={() => setActiveTab('automation')}>Upgrade Utility</a>
-                    <a href="#" className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}>Inventory Dashboard</a>
-                    <a href="#" onClick={() => setShowHistoryModal(true)}>Audit Logs</a>
-                    <a href="#" className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>Security Scan</a>
+                    <a href="#" className={activeTab === 'automation' ? 'active' : ''} onClick={() => setActiveTab('automation')}>REMEDIATION PLANNER</a>
+                    <a href="#" className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}>INVENTORY MATRIX</a>
+                    <a href="#" className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>SECURITY SCANNER</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setShowHistoryModal(true); }}>AUDIT TRAIL</a>
                 </div>
+                <div style={{ width: '180px' }}></div> {/* Spacer for balance */}
             </nav>
 
             {activeTab === 'inventory' ? (
-                <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <div>
-                            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a' }}>Global Inventory </h1>
-
-                        </div>
-                        <button className="btn btn-primary" onClick={fetchData}>Refresh Data</button>
-                    </div>
+                <div style={{ padding: '2.5rem', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
                     <InventoryDashboard data={data} />
                 </div>
             ) : activeTab === 'security' ? (
-                <VulnerabilityScanner />
+                <div style={{ padding: '2.5rem', height: 'calc(100vh - 64px)', overflowY: 'auto' }}>
+                    <VulnerabilityScanner />
+                </div>
             ) : (
                 <div className="main-body">
                     <aside className="sidebar">
-                        <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            <button
-                                className="btn btn-primary"
-                                style={{ width: '100%', fontWeight: 700 }}
-                                onClick={() => setShowAppForm(true)}
-                            >
-                                + Register App
+                        <div style={{ marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setShowAppForm(true)}>
+                                REGISTER APPLICATION
                             </button>
-                            <button
-                                className="btn btn-ghost"
-                                style={{ width: '100%', border: '1px solid #e2e8f0', background: 'white' }}
-                                onClick={() => setShowArtifactForm(true)}
-                            >
-                                Upload Artifact
+                            <button className="btn btn-ghost" style={{ width: '100%', fontWeight: 700 }} onClick={() => setShowArtifactForm(true)}>
+                                DEPLOY BINARY
                             </button>
                         </div>
 
-                        <AppSelector
-                            applications={data.applications}
-                            selectedAppId={selectedAppId}
-                            onSelect={(appId) => setSelectedAppId(appId)}
-                            onDelete={handleDeleteApp}
-                            onEdit={(app) => {
-                                const fullApp = {
-                                    ...app,
-                                    environments: data.environments
-                                        .filter(e => e.appId === app.id)
-                                        .map(e => ({
-                                            ...e,
-                                            servers: data.servers.filter(s => s.appId === app.id && s.envId === e.id)
-                                        }))
-                                };
-                                setEditingApp(fullApp as any);
-                                setShowAppForm(true);
-                            }}
-                        />
+                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
+                            <AppSelector
+                                applications={data.applications}
+                                selectedAppId={selectedAppId}
+                                onSelect={(appId) => setSelectedAppId(appId)}
+                                onDelete={handleDeleteApp}
+                                onEdit={(app) => {
+                                    const fullApp = {
+                                        ...app,
+                                        environments: data.environments
+                                            .filter(e => e.appId === app.id)
+                                            .map(e => ({
+                                                ...e,
+                                                servers: data.servers.filter(s => s.appId === app.id && s.envId === e.id)
+                                            }))
+                                    };
+                                    setEditingApp(fullApp as any);
+                                    setShowAppForm(true);
+                                }}
+                            />
+                        </div>
 
                         <EnvSelector
                             environments={data.environments.filter(e => e.appId === selectedAppId)}
@@ -198,21 +180,20 @@ const Dashboard = () => {
                             onToggle={handleToggleEnv}
                         />
 
-                        <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
-                            <div className="sidebar-title">Security Health</div>
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: '0.75rem',
-                                padding: '1rem', background: '#fef2f2', borderRadius: '12px',
-                                border: '1px solid #fee2e2'
-                            }} className="critical-badge">
+                        <div style={{ marginTop: '2.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                                Compliance Health
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                 <div style={{
-                                    width: '32px', height: '32px', background: '#ef4444',
-                                    borderRadius: '8px', display: 'flex', alignItems: 'center',
-                                    justifyContent: 'center', color: 'white', fontWeight: 800
-                                }}>{upgradesNeeded}</div>
+                                    width: '40px', height: '40px', background: upgradesNeeded > 0 ? '#000' : '#059669',
+                                    borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800
+                                }}>
+                                    {upgradesNeeded}
+                                </div>
                                 <div>
-                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#991b1b' }}>Pending Upgrades</div>
-                                    <div style={{ fontSize: '0.7rem', color: '#dc2626' }}>Action Required</div>
+                                    <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{upgradesNeeded > 0 ? 'Remediation Pending' : 'Optimal State'}</div>
+                                    <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>{upgradesNeeded > 0 ? 'Critical updates identified' : 'All systems compliant'}</div>
                                 </div>
                             </div>
                         </div>
@@ -221,21 +202,22 @@ const Dashboard = () => {
                     <main className="content-area">
                         <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                                <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>
-                                    {currentApp ? currentApp.name : "Select Application"}
+                                <h1 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#000', letterSpacing: '-0.025em' }}>
+                                    {currentApp ? currentApp.name : "System Deployment"}
                                 </h1>
-                                <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', alignItems: 'center' }}>
-                                    <span style={{ padding: '0.2rem 0.6rem', background: '#f1f5f9', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>
-                                        VAST ID: {currentApp?.vastId || "N/A"}
+                                <div style={{ display: 'flex', gap: '1.25rem', marginTop: '0.5rem', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        VAST-ID: {currentApp?.vastId || "UNREGISTERED"}
                                     </span>
-                                    <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-                                        Showing: {selectedEnvNames.length} Environments
+                                    <div style={{ width: '4px', height: '4px', background: '#cbd5e1', borderRadius: '50%' }}></div>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        ACTIVE SCOPE: {selectedEnvNames.length} CLUSTERS
                                     </span>
                                 </div>
                             </div>
                             <button
                                 className="btn btn-ghost"
-                                style={{ border: '1px solid #e2e8f0', background: 'white', fontWeight: 600 }}
+                                style={{ borderRadius: '12px' }}
                                 onClick={() => {
                                     if (currentApp) {
                                         const fullApp = {
@@ -252,33 +234,47 @@ const Dashboard = () => {
                                     }
                                 }}
                             >
-                                Update Inventory
+                                CONFIGURE INVENTORY
                             </button>
                         </div>
 
-                        <ServerTable
-                            servers={filteredServers}
-                            onUpgrade={handleUpgrade}
-                        />
-
-                        <div className="summary-bar" style={{ marginTop: '2rem' }}>
-                            <div className="stat-item">
-                                <span>Active Servers</span>
-                                <span style={{ fontWeight: 800 }}>{filteredServers.length}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span>Vulnerable/Outdated</span>
-                                <span className="stat-red" style={{ fontWeight: 800 }}>{filteredServers.filter(s => s.status !== "Up to Date").length}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span>Compliance Status</span>
-                                <span className="stat-green" style={{ fontWeight: 800 }}>{filteredServers.filter(s => s.status === "Up to Date").length}</span>
-                            </div>
+                        <div className="data-table-container">
+                            <ServerTable
+                                servers={filteredServers}
+                                onUpgrade={handleUpgrade}
+                            />
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem' }}>
-                            <button className="btn btn-batch" style={{ padding: '0.75rem 2.5rem', fontWeight: 700 }}>Initiate Batch Upgrade</button>
-                            <button className="btn btn-ghost" style={{ border: '1px solid #cbd5e0' }} onClick={fetchData}>Refresh Inventory</button>
+                        <div style={{
+                            marginTop: '2.5rem',
+                            padding: '1.5rem 2rem',
+                            background: '#000',
+                            borderRadius: '20px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                        }}>
+                            <div style={{ display: 'flex', gap: '3rem' }}>
+                                <div>
+                                    <div style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Target Systems</div>
+                                    <div style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 800 }}>{filteredServers.length}</div>
+                                </div>
+                                <div>
+                                    <div style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Non-Compliant</div>
+                                    <div style={{ color: '#ef4444', fontSize: '1.25rem', fontWeight: 800 }}>{filteredServers.filter(s => s.status !== "Up to Date").length}</div>
+                                </div>
+                                <div>
+                                    <div style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>System Integrity</div>
+                                    <div style={{ color: '#059669', fontSize: '1.25rem', fontWeight: 800 }}>
+                                        {filteredServers.length > 0 ? Math.round((filteredServers.filter(s => s.status === "Up to Date").length / filteredServers.length) * 100) : 0}%
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button className="btn" style={{ background: '#fff', color: '#000' }}>INITIATE BATCH REMEDIATION</button>
+                                <button className="btn" style={{ background: '#1e293b', color: '#fff' }} onClick={fetchData}>SYNC TELEMETRY</button>
+                            </div>
                         </div>
                     </main>
                 </div>

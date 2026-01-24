@@ -1,0 +1,48 @@
+---
+- name: "Enterprise Remediation: Apache"
+  block:
+    - name: "PRE-CHECK | Identify version"
+      shell: "{{ install_path }}/bin/httpd -v | grep -oP 'Apache/\\K[0-9.]+' | head -1"
+      register: current_v
+      failed_when: false
+      changed_when: false
+
+    - name: "ASSERT | Idempotency"
+      meta: end_host
+      when: current_v.stdout == target_version
+
+    - name: "SERVICE | Graceful Shutdown"
+      shell: "{{ install_path }}/bin/apachectl -k graceful-stop"
+      ignore_errors: true
+
+    - name: "FILESYSTEM | Snapshot Backup"
+      command: "mv {{ install_path }} {{ install_path }}_backup_{{ lookup('pipe', 'date +%Y%m%d%H%M') }}"
+
+    - name: "DEPLOY | Download & Extract Tarball"
+      unarchive:
+        src: "{{ repo_url }}/httpd-{{ target_version }}.tar.gz"
+        dest: "{{ install_path | dirname }}"
+        remote_src: yes
+
+    - name: "POST-DEPLOY | Restore Configuration"
+      command: "cp -rp {{ install_path }}_backup_*/{{ item }} {{ install_path }}/"
+      with_items: ["conf", "conf.d", "ssl"]
+      ignore_errors: true
+
+    - name: "SERVICE | Restart Instance"
+      shell: "{{ install_path }}/bin/apachectl -k start"
+
+    - name: "VALIDATE | Process Telemetry"
+      shell: "ps -ef | grep httpd | grep {{ install_path }} | grep -v grep"
+      register: ps_val
+      until: ps_val.rc == 0
+      retries: 3
+      delay: 5
+
+  rescue:
+    - name: "FAILSAFE | Rollback Triggered"
+      shell: "rm -rf {{ install_path }} && mv {{ install_path }}_backup_* {{ install_path }}"
+      ignore_errors: true
+    - name: "ALERT | Notify Failure"
+      fail:
+        msg: "Security remediation failed for Apache. System state reverted."

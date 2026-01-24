@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Application, Environment, Server } from '@/data/mockData';
 
@@ -15,130 +17,143 @@ const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ data }) => {
     );
     const [selectedEnv, setSelectedEnv] = useState<"Non-Prod" | "Prod">("Non-Prod");
 
-    // Natural sort logic for hostnames (handles characters and numbers)
     const naturalSort = (a: string, b: string) => {
         return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
     };
 
     const currentApp = data.applications.find(a => a.id === selectedAppId);
 
-    // Filter servers based on selection
     const filteredServers = data.servers.filter(s => {
         const env = data.environments.find(e => e.id === s.envId);
         return s.appId === selectedAppId && env?.name === selectedEnv;
     }).sort((a, b) => naturalSort(a.hostname, b.hostname));
 
     return (
-        <div style={{ display: 'flex', gap: '2rem', height: 'calc(100vh - 200px)', animation: 'fadeIn 0.3s ease-out' }}>
+        <div style={{ display: 'flex', gap: '2rem', height: '100%', animation: 'fadeIn 0.3s ease-out' }}>
             {/* Sidebar App List */}
-            <div style={{ width: '300px', background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b', marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Applications
+            <div style={{
+                width: '320px',
+                background: 'white',
+                borderRadius: '20px',
+                padding: '1.75rem',
+                boxShadow: 'var(--shadow-sm)',
+                border: '1px solid var(--border)'
+            }}>
+                <h3 style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    color: '#64748b',
+                    marginBottom: '1.5rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                }}>
+                    Enterprise Application Matrix
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     {data.applications.map(app => (
                         <button
                             key={app.id}
                             onClick={() => setSelectedAppId(app.id)}
                             style={{
                                 textAlign: 'left',
-                                padding: '1rem',
+                                padding: '0.875rem 1.25rem',
                                 borderRadius: '12px',
                                 border: 'none',
-                                background: selectedAppId === app.id ? '#f1f5f9' : 'transparent',
-                                color: selectedAppId === app.id ? '#2563eb' : '#475569',
+                                background: selectedAppId === app.id ? '#000000' : 'transparent',
+                                color: selectedAppId === app.id ? '#ffffff' : '#64748b',
                                 fontWeight: selectedAppId === app.id ? 700 : 500,
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
+                                fontSize: '0.9rem'
                             }}
                         >
-                            <span>{app.name}</span>
-                            {selectedAppId === app.id && <span style={{ fontSize: '1.2rem' }}>•</span>}
+                            {app.name}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div style={{ flex: 1, background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9', overflowY: 'auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            {/* Main Content Area */}
+            <div style={{
+                flex: 1,
+                background: 'white',
+                borderRadius: '20px',
+                padding: '2.5rem',
+                boxShadow: 'var(--shadow-sm)',
+                border: '1px solid var(--border)',
+                overflowY: 'auto'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
                     <div>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{currentApp?.name || "Inventory View"}</h2>
-                        <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Environment: <span style={{ fontWeight: 700, color: '#334155' }}>{selectedEnv}</span></p>
+                        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#000', letterSpacing: '-0.025em', marginBottom: '0.5rem' }}>
+                            {currentApp?.name || "Inventory Overview"}
+                        </h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: 500 }}>ACTIVE DEPLOYMENT</span>
+                            <div style={{ width: '1px', height: '12px', background: '#e2e8f0' }}></div>
+                            <span style={{ fontSize: '0.875rem', color: '#000', fontWeight: 700 }}>{selectedEnv.toUpperCase()}</span>
+                        </div>
                     </div>
 
-                    <div style={{ display: 'flex', background: '#f1f5f9', padding: '0.4rem', borderRadius: '12px', gap: '0.5rem' }}>
-                        <button
-                            onClick={() => setSelectedEnv("Non-Prod")}
-                            style={{
-                                padding: '0.6rem 2rem', borderRadius: '8px', border: 'none',
-                                fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
-                                background: selectedEnv === "Non-Prod" ? 'white' : 'transparent',
-                                color: selectedEnv === "Non-Prod" ? '#2563eb' : '#64748b',
-                                boxShadow: selectedEnv === "Non-Prod" ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                            }}
-                        >
-                            Non-Prod
-                        </button>
-                        <button
-                            onClick={() => setSelectedEnv("Prod")}
-                            style={{
-                                padding: '0.6rem 2rem', borderRadius: '8px', border: 'none',
-                                fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
-                                background: selectedEnv === "Prod" ? 'white' : 'transparent',
-                                color: selectedEnv === "Prod" ? '#2563eb' : '#64748b',
-                                boxShadow: selectedEnv === "Prod" ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                            }}
-                        >
-                            Prod
-                        </button>
+                    <div style={{ display: 'flex', background: '#f1f5f9', padding: '0.375rem', borderRadius: '12px', gap: '0.25rem' }}>
+                        {(["Non-Prod", "Prod"] as const).map((env) => (
+                            <button
+                                key={env}
+                                onClick={() => setSelectedEnv(env)}
+                                style={{
+                                    padding: '0.625rem 1.75rem',
+                                    borderRadius: '10px',
+                                    border: 'none',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    background: selectedEnv === env ? 'white' : 'transparent',
+                                    color: selectedEnv === env ? '#000000' : '#64748b',
+                                    boxShadow: selectedEnv === env ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                    textTransform: 'uppercase'
+                                }}
+                            >
+                                {env}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
                 {filteredServers.length > 0 ? (
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #f1f5f9' }}>
-                                <th style={thStyle}>Hostname (Sorted ↑)</th>
-                                <th style={thStyle}>IP Address</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredServers.map((server) => (
-                                <tr key={server.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                    <td style={{ ...tdStyle, fontWeight: 700, color: '#1e293b' }}>{server.hostname}</td>
-                                    <td style={{ ...tdStyle, color: '#64748b', fontFamily: 'monospace' }}>{server.ip}</td>
+                    <div className="data-table-container">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '60%' }}>Infrastructure Hostname</th>
+                                    <th>Point of Presence (IP)</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredServers.map((server) => (
+                                    <tr key={server.id}>
+                                        <td style={{ fontWeight: 700, color: '#0f172a' }}>{server.hostname}</td>
+                                        <td style={{ color: '#64748b', fontFamily: 'monospace', fontWeight: 500 }}>{server.ip}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-                        <p>No servers found for {currentApp?.name} in {selectedEnv} environment.</p>
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '6rem 2rem',
+                        background: '#f8fafc',
+                        borderRadius: '16px',
+                        border: '1px solid #e2e8f0'
+                    }}>
+                        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>Null Result Set</h3>
+                        <p style={{ color: '#64748b', fontSize: '0.875rem' }}>No telemetry data found for the selected application in this environment.</p>
                     </div>
                 )}
             </div>
-
-            <style jsx>{`
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-            `}</style>
         </div>
     );
-};
-
-const thStyle: React.CSSProperties = {
-    padding: '1.25rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em'
-};
-
-const tdStyle: React.CSSProperties = {
-    padding: '1.25rem 1rem', fontSize: '0.9rem', color: '#334155'
 };
 
 export default InventoryDashboard;

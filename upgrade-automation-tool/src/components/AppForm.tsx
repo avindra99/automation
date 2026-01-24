@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 
 interface EnvConfig {
@@ -16,7 +18,6 @@ const AppForm: React.FC<AppFormProps> = ({ initialData, onSubmit, onClose }) => 
     const [name, setName] = useState(initialData?.name || '');
     const [vastId, setVastId] = useState(initialData?.vastId || '');
 
-    // Initialize with Non-Prod and Prod fixed
     const [envs, setEnvs] = useState<EnvConfig[]>([
         {
             name: 'Non-Prod',
@@ -69,7 +70,7 @@ const AppForm: React.FC<AppFormProps> = ({ initialData, onSubmit, onClose }) => 
                     .filter(s => s.trim() !== '')
                     .map(hostname => ({
                         hostname,
-                        components: [] // Backend will add default if empty
+                        components: []
                     }))
             })),
             action: initialData ? 'edit' : 'add'
@@ -77,119 +78,101 @@ const AppForm: React.FC<AppFormProps> = ({ initialData, onSubmit, onClose }) => 
     };
 
     return (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, backdropFilter: 'blur(4px)'
-        }}>
-            <div className="card" style={{
-                width: '750px',
-                maxHeight: '90vh',
-                backgroundColor: 'white',
-                padding: '2.5rem',
-                overflowY: 'auto',
-                borderRadius: '16px',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-            }}>
-                <h2 style={{ marginBottom: '2rem', fontSize: '1.5rem', fontWeight: 800, color: '#1a202c', borderBottom: '2px solid #edf2f7', paddingBottom: '1rem' }}>
-                    {initialData ? 'Update Enterprise Application' : 'Register New Application'}
-                </h2>
+        <div className="modal-overlay">
+            <div className="modal-content" style={{ width: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '3.5rem' }}>
+                <div style={{ marginBottom: '2.5rem' }}>
+                    <h2 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#000', letterSpacing: '-0.025em', marginBottom: '0.5rem' }}>
+                        {initialData ? 'Update Infrastructure Node' : 'Register Infrastructure Node'}
+                    </h2>
+                    <p style={{ color: '#64748b', fontSize: '0.95rem', fontWeight: 500 }}>
+                        Configure high-level metadata and cluster assignments for the remediation cycle.
+                    </p>
+                </div>
+
                 <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '3rem' }}>
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#4a5568', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Application Name</label>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', marginBottom: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Application Common Name
+                            </label>
                             <input
                                 type="text"
-                                className="btn btn-ghost"
-                                style={{ width: '100%', textAlign: 'left', padding: '0.75rem', color: '#2d3748', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                style={{ width: '100%', padding: '0.875rem 1rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#f8fafc', fontSize: '1rem', fontWeight: 500 }}
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="e.g. My Global App"
+                                placeholder="e.g. Global Middleware Portal"
                                 required
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#4a5568', marginBottom: '0.5rem', textTransform: 'uppercase' }}>VAST ID (Enterprise Identifier)</label>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', marginBottom: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                VAST ID
+                            </label>
                             <input
                                 type="text"
-                                className="btn btn-ghost"
-                                style={{ width: '100%', textAlign: 'left', padding: '0.75rem', color: '#2d3748', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                style={{ width: '100%', padding: '0.875rem 1rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#f8fafc', fontSize: '1rem', fontWeight: 500 }}
                                 value={vastId}
                                 onChange={(e) => setVastId(e.target.value)}
-                                placeholder="e.g. V00123"
+                                placeholder="V00XXXXX"
                                 required
                             />
                         </div>
                     </div>
 
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem', color: '#2d3748' }}>Environment Setup</h3>
+                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800, color: '#000', marginBottom: '1.5rem', letterSpacing: '-0.025em' }}>
+                        Environment Configuration
+                    </h3>
 
                     {envs.map((env, envIndex) => (
                         <div key={env.name} style={{
-                            marginBottom: '2rem',
-                            padding: '1.5rem',
-                            border: env.enabled ? '2px solid #ebf4ff' : '1px solid #edf2f7',
-                            borderRadius: '12px',
-                            backgroundColor: env.enabled ? '#f7fafc' : '#ffffff'
+                            marginBottom: '1.5rem',
+                            padding: '2rem',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '16px',
+                            background: env.enabled ? '#ffffff' : '#f8fafc',
+                            transition: 'all 0.2s'
                         }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={env.enabled}
-                                        onChange={() => handleToggleEnv(envIndex)}
-                                        style={{ width: '1.2rem', height: '1.2rem' }}
-                                    />
-                                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: env.enabled ? '#2b6cb0' : '#a0aec0' }}>{env.name}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: env.enabled ? '1.5rem' : 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }} onClick={() => handleToggleEnv(envIndex)}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '6px', border: `2px solid ${env.enabled ? '#000' : '#cbd5e1'}`,
+                                        background: env.enabled ? '#000' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}>
+                                        {env.enabled && <div style={{ width: '8px', height: '8px', background: '#fff', borderRadius: '2px' }}></div>}
+                                    </div>
+                                    <span style={{ fontSize: '1.125rem', fontWeight: 800, color: env.enabled ? '#000' : '#94a3b8' }}>
+                                        {env.name.toUpperCase()} DATA PLAN
+                                    </span>
                                 </div>
                                 {env.enabled && (
                                     <button
                                         type="button"
-                                        className="btn btn-ghost"
-                                        style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', backgroundColor: '#edf2f7', color: '#4a5568' }}
                                         onClick={() => handleAddServer(envIndex)}
+                                        style={{ background: '#f1f5f9', border: 'none', color: '#000', fontSize: '0.75rem', fontWeight: 800, padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}
                                     >
-                                        + Add Server
+                                        + ADD ENDPOINT
                                     </button>
                                 )}
                             </div>
 
                             {env.enabled && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
                                     {env.servers.map((server, serverIndex) => (
                                         <div key={serverIndex} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Server Hostname (e.g. vz-web-01)"
-                                                    className="btn btn-ghost"
-                                                    style={{ width: '100%', textAlign: 'left', padding: '0.75rem', color: '#2d3748', border: '1px solid #cbd5e0', borderRadius: '6px', backgroundColor: 'white' }}
-                                                    value={server}
-                                                    onChange={(e) => handleServerChange(envIndex, serverIndex, e.target.value)}
-                                                    required={env.enabled}
-                                                />
-                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Infrastructure Hostname (e.g. vz-cluster-01)"
+                                                style={{ flex: 1, padding: '0.875rem 1rem', border: '1px solid #e2e8f0', borderRadius: '10px', background: '#fff', fontSize: '0.9rem', fontWeight: 600 }}
+                                                value={server}
+                                                onChange={(e) => handleServerChange(envIndex, serverIndex, e.target.value)}
+                                                required={env.enabled}
+                                            />
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveServer(envIndex, serverIndex)}
-                                                style={{
-                                                    width: '36px',
-                                                    height: '36px',
-                                                    borderRadius: '8px',
-                                                    border: '1px solid #fee2e2',
-                                                    backgroundColor: '#fef2f2',
-                                                    color: '#ef4444',
-                                                    fontSize: '1.25rem',
-                                                    fontWeight: 800,
-                                                    cursor: 'pointer',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    transition: 'all 0.2s'
-                                                }}
-                                                title="Remove Server"
+                                                style={{ width: '40px', height: '40px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '10px', color: '#ef4444', fontWeight: 900, cursor: 'pointer' }}
                                             >
-                                                -
+                                                &times;
                                             </button>
                                         </div>
                                     ))}
@@ -198,10 +181,12 @@ const AppForm: React.FC<AppFormProps> = ({ initialData, onSubmit, onClose }) => 
                         </div>
                     ))}
 
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2.5rem', borderTop: '2px solid #edf2f7', paddingTop: '1.5rem' }}>
-                        <button type="button" className="btn btn-ghost" style={{ fontWeight: 600 }} onClick={onClose}>Discard</button>
-                        <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem 2rem', fontWeight: 700, borderRadius: '8px' }}>
-                            {initialData ? 'Apply Updates' : 'Register Application'}
+                    <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'flex-end', marginTop: '3.5rem', borderTop: '1px solid #f1f5f9', paddingTop: '2.5rem' }}>
+                        <button type="button" className="btn btn-ghost" style={{ width: '140px', height: '3.5rem' }} onClick={onClose}>
+                            DISCARD
+                        </button>
+                        <button type="submit" className="btn btn-primary" style={{ width: '220px', height: '3.5rem', letterSpacing: '0.05em' }}>
+                            {initialData ? 'COMMIT CHANGES' : 'REGISTRY DEPLOYMENT'}
                         </button>
                     </div>
                 </form>

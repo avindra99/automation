@@ -1,6 +1,7 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Server } from '@/data/mockData';
-
 import BuildModal from './BuildModal';
 
 interface ServerTableProps {
@@ -19,14 +20,14 @@ const ServerTable: React.FC<ServerTableProps> = ({ servers, onUpgrade }) => {
         try {
             await onUpgrade(serverId, componentName, targetVersion);
         } catch (error) {
-            console.error("Upgrade failed", error);
+            console.error("Operation failed:", error);
         } finally {
             setUpgradingState(prev => ({ ...prev, [key]: false }));
         }
     };
 
     return (
-        <div className="table-card" style={{ border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', borderRadius: '12px', overflow: 'hidden' }}>
+        <div style={{ background: '#fff', borderRadius: '20px', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
             {activeBuild && (
                 <BuildModal
                     serverId={activeBuild.serverId}
@@ -37,110 +38,126 @@ const ServerTable: React.FC<ServerTableProps> = ({ servers, onUpgrade }) => {
                     }}
                 />
             )}
-            <div className="table-header" style={{ padding: '1.5rem', background: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a' }}>Middleware Components for Environment</h2>
-                    <button className="btn btn-ghost" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2563eb', border: '1px solid #dbeafe', padding: '0.6rem 1.2rem', borderRadius: '8px' }}>
-                        Sync Vulnerabilities (XLS/API)
-                    </button>
+
+            <div style={{ padding: '1.5rem 2.5rem', background: '#ffffff', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '1.125rem', fontWeight: 800, color: '#000', letterSpacing: '-0.025em' }}>Deployment Instances</h2>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', background: '#f8fafc', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        ACTIVE INSTANCES: {servers.length}
+                    </span>
                 </div>
             </div>
-            <table style={{ background: 'white', width: '100%', borderCollapse: 'separate', borderSpacing: '0' }}>
-                <thead>
-                    <tr style={{ background: '#f8fafc' }}>
-                        <th style={headerStyle}>Hostname</th>
-                        <th style={headerStyle}>IP Address</th>
-                        <th style={headerStyle}>Software</th>
-                        <th style={headerStyle}>Install Directory</th>
-                        <th style={headerStyle}>Vulnerabilities</th>
-                        <th style={headerStyle}>Current Version</th>
-                        <th style={headerStyle}>Target Version</th>
-                        <th style={headerStyle}>Status</th>
-                        <th style={headerStyle}>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {servers.map((server) => (
-                        <React.Fragment key={server.id}>
-                            {server.components.map((comp) => {
-                                const isUpdating = upgradingState[`${server.id}-${comp.name}`];
-                                const isVulnerable = (comp.vulnerabilities || "").toLowerCase().includes('critical') ||
-                                    (comp.vulnerabilities || "").toLowerCase().includes('high');
 
-                                return (
-                                    <tr key={`${server.id}-${comp.name}`} style={{ transition: 'background-color 0.2s' }} className="table-row">
-                                        <td style={cellStyle}>{server.hostname}</td>
-                                        <td style={{ ...cellStyle, color: '#64748b' }}>{server.ip}</td>
-                                        <td style={{ ...cellStyle, fontWeight: 700, color: '#1e293b' }}>{comp.name}</td>
-                                        <td style={{ ...cellStyle, color: '#475569', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-                                            {comp.installPath || "/opt/verizon/software"}
-                                        </td>
-                                        <td style={cellStyle}>
-                                            <span style={{
-                                                backgroundColor: isVulnerable ? '#fef2f2' : '#f0fdf4',
-                                                color: isVulnerable ? '#dc2626' : '#16a34a',
-                                                padding: '0.4rem 0.8rem',
-                                                borderRadius: '6px',
-                                                fontWeight: 600,
-                                                fontSize: '0.85rem',
-                                                border: `1px solid ${isVulnerable ? '#fee2e2' : '#dcfce7'}`
-                                            }}>
-                                                {comp.vulnerabilities || "Clean"}
-                                            </span>
-                                        </td>
-                                        <td style={{ ...cellStyle, fontWeight: 500 }}>{comp.currentVersion}</td>
-                                        <td style={{ ...cellStyle, fontWeight: 500, color: '#2563eb' }}>{comp.targetVersion}</td>
-                                        <td style={cellStyle}>
-                                            <span className={`badge ${server.status === "Outdated" ? "status-outdated" : (server.status === "Vulnerable" ? "status-vulnerable" : "status-uptodate")}`}>
-                                                {server.status}
-                                            </span>
-                                        </td>
-                                        <td style={cellStyle}>
-                                            {server.status === "Up to Date" ? (
-                                                <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic' }}>Up to Date</span>
-                                            ) : (
-                                                <button
-                                                    className="btn"
-                                                    style={{
-                                                        fontSize: '0.85rem',
-                                                        padding: '0.5rem 1.25rem',
-                                                        backgroundColor: '#22c55e',
-                                                        color: '#ffffff',
-                                                        border: 'none',
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                        <tr style={{ background: '#f8fafc' }}>
+                            <th style={headerStyle}>Host Infrastructure</th>
+                            <th style={headerStyle}>Software</th>
+                            <th style={headerStyle}>Version Hierarchy</th>
+                            <th style={headerStyle}>Compliance</th>
+                            <th style={headerStyle}>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {servers.map((server) => (
+                            <React.Fragment key={server.id}>
+                                {server.components.map((comp) => {
+                                    const isUpdating = upgradingState[`${server.id}-${comp.name}`];
+                                    const isVulnerable = (comp.vulnerabilities || "").toLowerCase().includes('critical') ||
+                                        (comp.vulnerabilities || "").toLowerCase().includes('high');
+
+                                    return (
+                                        <tr key={`${server.id}-${comp.name}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                            <td style={cellStyle}>
+                                                <div style={{ fontWeight: 700, color: '#0f172a' }}>{server.hostname}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>{server.ip}</div>
+                                            </td>
+                                            <td style={cellStyle}>
+                                                <span style={{
+                                                    padding: '0.375rem 0.75rem',
+                                                    background: '#f1f5f9',
+                                                    color: '#334155',
+                                                    borderRadius: '6px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 800
+                                                }}>
+                                                    {comp.name.toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td style={cellStyle}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <span style={{ color: '#64748b', fontWeight: 600 }}>{comp.currentVersion}</span>
+                                                    <div style={{ width: '12px', height: '1px', background: '#cbd5e1' }}></div>
+                                                    <span style={{ color: '#000', fontWeight: 800 }}>{comp.targetVersion}</span>
+                                                </div>
+                                            </td>
+                                            <td style={cellStyle}>
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <span style={{
+                                                        backgroundColor: isVulnerable ? '#fef2f2' : '#f0fdf4',
+                                                        color: isVulnerable ? '#b91c1c' : '#166534',
+                                                        padding: '0.375rem 0.625rem',
                                                         borderRadius: '6px',
-                                                        fontWeight: 700,
-                                                        cursor: 'pointer',
-                                                        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                    disabled={isUpdating}
-                                                    onClick={() => setActiveBuild({ serverId: server.id, componentName: comp.name })}
-                                                >
-                                                    {isUpdating ? 'Executing...' : 'Build'}
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </React.Fragment>
-                    ))}
-                </tbody>
-            </table>
-            <style jsx>{`
-                .table-row:hover {
-                    background-color: #f8fafc;
-                }
-            `}</style>
+                                                        fontWeight: 800,
+                                                        fontSize: '0.7rem',
+                                                        border: `1px solid ${isVulnerable ? '#fecaca' : '#bbf7d0'}`,
+                                                        textTransform: 'uppercase'
+                                                    }}>
+                                                        {isVulnerable ? 'Critical Risk' : 'Secure'}
+                                                    </span>
+                                                    <span style={{
+                                                        backgroundColor: server.status === "Up to Date" ? '#ecfdf5' : '#fffbeb',
+                                                        color: server.status === "Up to Date" ? '#065f46' : '#92400e',
+                                                        padding: '0.375rem 0.625rem',
+                                                        borderRadius: '6px',
+                                                        fontWeight: 800,
+                                                        fontSize: '0.7rem',
+                                                        border: `1px solid ${server.status === "Up to Date" ? '#a7f3d0' : '#fde68a'}`,
+                                                        textTransform: 'uppercase'
+                                                    }}>
+                                                        {server.status}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td style={cellStyle}>
+                                                {server.status === "Up to Date" ? (
+                                                    <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.05em' }}>SYNCHRONIZED</div>
+                                                ) : (
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        style={{
+                                                            fontSize: '0.7rem',
+                                                            padding: '0.5rem 1.25rem',
+                                                            fontWeight: 800,
+                                                            height: '2.5rem',
+                                                            minWidth: '100px',
+                                                            letterSpacing: '0.05em'
+                                                        }}
+                                                        disabled={isUpdating}
+                                                        onClick={() => setActiveBuild({ serverId: server.id, componentName: comp.name })}
+                                                    >
+                                                        {isUpdating ? 'INITIALIZING...' : 'INITIATE BUILD'}
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </React.Fragment>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
 
 const headerStyle: React.CSSProperties = {
-    padding: '1rem 1.5rem',
+    padding: '1.25rem 2.5rem',
     textAlign: 'left',
     fontSize: '0.75rem',
-    fontWeight: 700,
+    fontWeight: 800,
     color: '#64748b',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
@@ -148,10 +165,9 @@ const headerStyle: React.CSSProperties = {
 };
 
 const cellStyle: React.CSSProperties = {
-    padding: '1.25rem 1.5rem',
-    fontSize: '0.9rem',
+    padding: '1.5rem 2.5rem',
+    fontSize: '0.875rem',
     borderBottom: '1px solid #f1f5f9'
 };
 
 export default ServerTable;
-

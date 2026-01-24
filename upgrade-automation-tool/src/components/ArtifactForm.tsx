@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 
 interface SoftwareType {
@@ -86,84 +88,110 @@ const ArtifactForm: React.FC<ArtifactFormProps> = ({ onClose, onUploadSuccess })
     };
 
     return (
-        <div className="modal-overlay" style={{
-            backdropFilter: 'blur(8px)',
-            backgroundColor: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-        }}>
-            <div className="artifact-modal" style={{
-                background: 'rgba(255, 255, 255, 0.95)',
-                padding: '2.5rem',
-                borderRadius: '24px',
-                width: '100%',
-                maxWidth: '600px',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                position: 'relative',
-                animation: 'modalSlideIn 0.3s ease-out'
-            }}>
-                <button onClick={onClose} style={{
-                    position: 'absolute', top: '1.5rem', right: '1.5rem',
-                    background: '#f1f5f9', border: 'none', borderRadius: '50%',
-                    width: '32px', height: '32px', cursor: 'pointer', color: '#64748b'
-                }}>&times;</button>
+        <div className="modal-overlay">
+            <div className="modal-content" style={{ padding: '3rem', width: '100%', maxWidth: '580px', position: 'relative' }}>
+                <button
+                    onClick={onClose}
+                    style={{
+                        position: 'absolute', top: '1.5rem', right: '1.5rem',
+                        background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '50%',
+                        width: '36px', height: '36px', cursor: 'pointer', color: '#64748b',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem'
+                    }}
+                >
+                    &times;
+                </button>
 
-                <h2 style={{
-                    fontSize: '1.75rem', fontWeight: 800, color: '#1e293b',
-                    marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem'
-                }}>
-                    <span style={{ fontSize: '2rem' }}></span> Artifact Upload
-                </h2>
-                <p style={{ color: '#64748b', marginBottom: '2rem' }}>Deploy new software versions to the enterprise repository</p>
+                <div style={{ marginBottom: '2.5rem' }}>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#000', letterSpacing: '-0.025em', marginBottom: '0.5rem' }}>
+                        Enterprise Software Hub
+                    </h2>
+                    <p style={{ color: '#64748b', fontSize: '0.95rem', fontWeight: 500 }}>
+                        Deploy validated middleware binaries to the local Verizon automation cluster.
+                    </p>
+                </div>
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                            <label style={{ fontWeight: 600, color: '#334155' }}>Software Classification</label>
-                            <button type="button" onClick={() => setShowNewTypeForm(true)} style={{
-                                background: 'none', border: 'none', color: '#3b82f6',
-                                fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer'
-                            }}>+ New Type</button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.625rem' }}>
+                            <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Software Category
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => setShowNewTypeForm(true)}
+                                style={{
+                                    background: 'none', border: 'none', color: '#2563eb',
+                                    fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', padding: 0
+                                }}
+                            >
+                                + ADD NEW CATEGORY
+                            </button>
                         </div>
                         <select
                             value={selectedTypeId}
                             onChange={(e) => setSelectedTypeId(e.target.value)}
                             style={{
-                                width: '100%', padding: '0.8rem 1rem', border: '2px solid #e2e8f0',
-                                borderRadius: '12px', outline: 'none', transition: 'border-color 0.2s'
+                                width: '100%', padding: '0.875rem 1rem', border: '1px solid #e2e8f0',
+                                borderRadius: '12px', outline: 'none', transition: 'all 0.2s',
+                                background: '#f8fafc', fontSize: '0.95rem', fontWeight: 500
                             }}
                         >
                             {softwareTypes.map(t => (
-                                <option key={t.id} value={t.id}>{t.name} (Target: {t.installPath})</option>
+                                <option key={t.id} value={t.id}>{t.name.toUpperCase()}</option>
                             ))}
                         </select>
                     </div>
 
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#334155' }}>Release Version</label>
+                        <label style={{ display: 'block', marginBottom: '0.625rem', fontSize: '0.85rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Release Version
+                        </label>
                         <input
                             type="text"
                             value={version}
                             onChange={(e) => setVersion(e.target.value)}
-                            placeholder="e.g. 11.0.21, 3.4.1"
+                            placeholder="e.g. 17.0.9"
                             style={{
-                                width: '100%', padding: '0.8rem 1rem', border: '2px solid #e2e8f0',
-                                borderRadius: '12px', outline: 'none'
+                                width: '100%', padding: '0.875rem 1rem', border: '1px solid #e2e8f0',
+                                borderRadius: '12px', outline: 'none', background: '#f8fafc',
+                                fontSize: '0.95rem', fontWeight: 500
                             }}
                             required
                         />
                     </div>
 
                     <div style={{
-                        marginBottom: '2rem', padding: '2rem', border: '2px dashed #cbd5e0',
-                        borderRadius: '16px', textAlign: 'center', background: '#f8fafc',
-                        cursor: 'pointer'
-                    }} onClick={() => document.getElementById('fileInput')?.click()}>
-                        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📂</div>
-                        <div style={{ fontWeight: 600, color: '#475569' }}>{file ? file.name : "Select Software Binary"}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.25rem' }}>Drag and drop or click to browse</div>
+                        marginBottom: '2.5rem', padding: '3rem 2rem', border: '2px dashed #cbd5e1',
+                        borderRadius: '20px', textAlign: 'center', background: '#ffffff',
+                        cursor: 'pointer', transition: 'all 0.2s ease'
+                    }}
+                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#000'}
+                        onMouseLeave={(e) => e.currentTarget.style.borderColor = '#cbd5e1'}
+                        onClick={() => document.getElementById('fileInput')?.click()}>
+
+                        <div style={{
+                            width: '48px', height: '48px', background: '#f1f5f9', borderRadius: '12px',
+                            margin: '0 auto 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <div style={{ width: '20px', height: '20px', border: '2px solid #64748b', borderRadius: '3px' }}></div>
+                        </div>
+
+                        {file ? (
+                            <div>
+                                <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '1rem' }}>{file.name}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 700, marginTop: '0.5rem', textTransform: 'uppercase' }}>
+                                    {(file.size / (1024 * 1024)).toFixed(2)} MB • READY FOR DEPLOYMENT
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div style={{ fontWeight: 800, color: '#334155', fontSize: '1rem' }}>Select Software Binary</div>
+                                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem', fontWeight: 500 }}>
+                                    TAR.GZ, ZIP, or EXE accepted
+                                </div>
+                            </>
+                        )}
                         <input
                             id="fileInput"
                             type="file"
@@ -174,44 +202,59 @@ const ArtifactForm: React.FC<ArtifactFormProps> = ({ onClose, onUploadSuccess })
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button type="button" className="btn btn-ghost" style={{ flex: 1, padding: '0.8rem' }} onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary" style={{
-                            flex: 2, padding: '0.8rem', background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-                            border: 'none', boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)', fontWeight: 700
-                        }} disabled={uploading}>
-                            {uploading ? 'Processing Deployment...' : 'Deploy to Artifactory'}
+                        <button type="button" className="btn btn-ghost" style={{ flex: 1, height: '3.5rem' }} onClick={onClose}>
+                            CANCEL
+                        </button>
+                        <button type="submit" className="btn btn-primary" style={{ flex: 2, height: '3.5rem', letterSpacing: '0.05em' }} disabled={uploading}>
+                            {uploading ? 'UPLOADING...' : 'DEPLOY TO SERVER'}
                         </button>
                     </div>
                 </form>
 
                 {showNewTypeForm && (
-                    <div className="modal-overlay" style={{ backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001 }}>
-                        <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', width: '400px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-                            <h3 style={{ marginTop: 0 }}>Register New Software Type</h3>
+                    <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.4)' }}>
+                        <div className="modal-content" style={{ padding: '2.5rem', width: '420px' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', letterSpacing: '-0.025em' }}>
+                                Register New Category
+                            </h3>
                             <form onSubmit={handleCreateType}>
-                                <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Name (e.g. ANSIBLE)</label>
-                                    <input value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)} style={{ width: '100%', padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} required />
+                                <div style={{ marginBottom: '1.25rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                        Software Name
+                                    </label>
+                                    <input
+                                        value={newTypeName}
+                                        onChange={(e) => setNewTypeName(e.target.value)}
+                                        placeholder="e.g. NGINX"
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '10px', background: '#f8fafc', outline: 'none' }}
+                                        required
+                                    />
                                 </div>
-                                <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Base Install Path</label>
-                                    <input value={newTypePath} onChange={(e) => setNewTypePath(e.target.value)} style={{ width: '100%', padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '8px' }} placeholder="/opt/verizon/..." required />
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                        Target Install Path
+                                    </label>
+                                    <input
+                                        value={newTypePath}
+                                        onChange={(e) => setNewTypePath(e.target.value)}
+                                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '10px', background: '#f8fafc', outline: 'none' }}
+                                        placeholder="/apps/opt/mw/..."
+                                        required
+                                    />
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                    <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setShowNewTypeForm(false)}>Cancel</button>
-                                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Add Type</button>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setShowNewTypeForm(false)}>
+                                        CANCEL
+                                    </button>
+                                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                                        SAVE
+                                    </button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 )}
             </div>
-            <style jsx>{`
-                @keyframes modalSlideIn {
-                    from { transform: translateY(20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-            `}</style>
         </div>
     );
 };

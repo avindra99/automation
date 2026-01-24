@@ -1,0 +1,34 @@
+stages:
+  - lint
+  - validate
+  - remediate
+
+# Professional Linting for Ansible Best Practices
+ansible-lint:
+  stage: lint
+  image: alpine:latest
+  script:
+    - apk add ansible-lint
+    - ansible-lint ansible/site.yml
+
+# Dry run on Non-Prod before production execution
+dry-run-remediation:
+  stage: validate
+  image: geerlingguy/docker-centos7-ansible:latest
+  script:
+    - cd ansible
+    - ansible-playbook site.yml -i inventory/non-prod.ini --check --extra-vars "target_software=$TARGET_SW target_version=$TARGET_VER install_path=$INSTALL_PATH repo_url=$REPO_URL"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+
+# The production remediation execution
+production-patching:
+  stage: remediate
+  image: geerlingguy/docker-centos7-ansible:latest
+  script:
+    - cd ansible
+    - ansible-playbook site.yml -i inventory/prod.ini --extra-vars "target_software=$TARGET_SW target_version=$TARGET_VER install_path=$INSTALL_PATH repo_url=$REPO_URL"
+  when: manual
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual

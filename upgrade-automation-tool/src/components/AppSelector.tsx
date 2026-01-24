@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Application } from '@/data/mockData';
 
@@ -11,76 +13,90 @@ interface AppSelectorProps {
 
 const AppSelector: React.FC<AppSelectorProps> = ({ applications, selectedAppId, onSelect, onEdit, onDelete }) => {
     return (
-        <div className="sidebar-section">
-            <h3 className="sidebar-title" style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
-                Application Inventory
+        <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '1rem',
+                borderBottom: '1px solid #f1f5f9',
+                paddingBottom: '0.5rem'
+            }}>
+                Application Registry
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 {applications.length === 0 && (
-                    <div style={{ padding: '1rem', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', textAlign: 'center' }}>
-                        No applications found
+                    <div style={{ padding: '1rem', color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center' }}>
+                        No records identified
                     </div>
                 )}
                 {applications.map((app) => (
                     <div
                         key={app.id}
-                        className={`app-item ${selectedAppId === app.id ? 'active' : ''}`}
+                        className={selectedAppId === app.id ? 'active' : ''}
                         style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             padding: '0.75rem 1rem',
-                            borderRadius: '8px',
+                            borderRadius: '10px',
                             cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            backgroundColor: selectedAppId === app.id ? '#f1f5f9' : 'transparent'
+                            transition: 'all 0.15s ease',
+                            background: selectedAppId === app.id ? '#000000' : 'transparent',
+                            color: selectedAppId === app.id ? '#ffffff' : '#64748b'
                         }}
                         onClick={() => onSelect(app.id)}
                     >
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontWeight: selectedAppId === app.id ? 700 : 500, color: selectedAppId === app.id ? '#1e293b' : '#64748b', fontSize: '0.9rem' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>
                                 {app.name}
                             </span>
-                            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>ID: {app.vastId}</span>
+                            <span style={{ fontSize: '0.65rem', opacity: 0.7, fontWeight: 600 }}>ID: {app.vastId}</span>
                         </div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
                             <button
                                 onClick={(e) => { e.stopPropagation(); onEdit(app); }}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', opacity: 0.6, color: '#64748b', padding: '2px' }}
-                                title="Edit Inventory"
-                                className="action-button"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 800,
+                                    color: selectedAppId === app.id ? '#fff' : '#64748b',
+                                    padding: '4px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.025em'
+                                }}
                             >
-                                ⚙️
+                                EDIT
                             </button>
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    if (window.confirm(`Are you sure you want to delete ${app.name}?`)) {
+                                    if (window.confirm(`Confirm deletion of ${app.name} from registry?`)) {
                                         onDelete(app.id);
                                     }
                                 }}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', opacity: 0.6, color: '#ef4444', padding: '2px' }}
-                                title="Delete Application"
-                                className="action-button"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 800,
+                                    color: selectedAppId === app.id ? 'rgba(255,255,255,0.6)' : '#ef4444',
+                                    padding: '4px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.025em'
+                                }}
                             >
-                                🗑️
+                                DELETE
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
-            <style jsx>{`
-                .app-item:hover {
-                    background-color: #f8fafc;
-                }
-                .app-item.active {
-                    border-left: 4px solid #2563eb;
-                }
-                .action-button:hover {
-                    opacity: 1 !important;
-                    transform: scale(1.1);
-                }
-            `}</style>
         </div>
     );
 };

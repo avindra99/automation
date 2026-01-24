@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 
 interface EnvSelectorProps {
@@ -7,30 +9,72 @@ interface EnvSelectorProps {
 }
 
 const EnvSelector: React.FC<EnvSelectorProps> = ({ environments, selectedEnvNames, onToggle }) => {
+    // Unique list of environment names
+    const uniqueEnvs = environments.filter((v, i, a) => a.findIndex(t => t.name === v.name) === i);
+
     return (
-        <div className="sidebar-section">
-            <h3 className="sidebar-title">Select Environments</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {environments.filter((v, i, a) => a.findIndex(t => t.name === v.name) === i).map((env) => {
+        <div style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '1rem',
+                borderBottom: '1px solid #f1f5f9',
+                paddingBottom: '0.5rem'
+            }}>
+                Deployment Scopes
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {uniqueEnvs.map((env) => {
                     const isActive = selectedEnvNames.includes(env.name);
                     return (
-                        <button
+                        <div
                             key={env.id}
                             onClick={() => onToggle(env.name)}
-                            className={`btn ${isActive ? 'btn-primary' : 'btn-ghost'}`}
                             style={{
-                                width: '100%',
-                                justifyContent: 'flex-start',
-                                textAlign: 'left',
-                                padding: '0.6rem 1rem',
-                                border: isActive ? 'none' : '1px solid #e2e8f0',
-                                boxShadow: isActive ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none',
-                                fontWeight: isActive ? 600 : 500
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                padding: '0.75rem 1rem',
+                                borderRadius: '10px',
+                                cursor: 'pointer',
+                                background: isActive ? '#f8fafc' : 'transparent',
+                                border: `1px solid ${isActive ? '#e2e8f0' : 'transparent'}`,
+                                transition: 'all 0.15s ease'
                             }}
                         >
-                            <span style={{ marginRight: '8px' }}>{isActive ? '●' : '○'}</span>
-                            {env.name}
-                        </button>
+                            <div style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '4px',
+                                border: `2px solid ${isActive ? '#000' : '#cbd5e1'}`,
+                                background: isActive ? '#000' : 'transparent',
+                                position: 'relative',
+                                transition: 'all 0.1s ease'
+                            }}>
+                                {isActive && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        width: '6px',
+                                        height: '6px',
+                                        background: '#fff',
+                                        borderRadius: '1px'
+                                    }}></div>
+                                )}
+                            </div>
+                            <span style={{
+                                fontSize: '0.875rem',
+                                fontWeight: isActive ? 700 : 500,
+                                color: isActive ? '#000' : '#64748b'
+                            }}>
+                                {env.name}
+                            </span>
+                        </div>
                     );
                 })}
             </div>
