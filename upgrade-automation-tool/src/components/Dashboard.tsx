@@ -53,7 +53,7 @@ const Dashboard = () => {
     };
 
     const handleUpgrade = async (serverId: string | number, componentName: string, targetVersion: string) => {
-        await fetch('http://localhost:8081/api/upgrade', {
+        await fetch('/api/upgrade', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ serverId, componentName, targetVersion }),
