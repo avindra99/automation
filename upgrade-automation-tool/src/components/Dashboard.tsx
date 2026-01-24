@@ -10,6 +10,7 @@ import HistoryModal from './HistoryModal';
 import { Application, Environment, Server } from '@/data/mockData';
 
 import InventoryDashboard from './InventoryDashboard';
+import VulnerabilityScanner from './VulnerabilityScanner';
 
 const Dashboard = () => {
     const [data, setData] = useState<{
@@ -18,7 +19,7 @@ const Dashboard = () => {
         servers: Server[];
     } | null>(null);
 
-    const [activeTab, setActiveTab] = useState<'automation' | 'inventory'>('automation');
+    const [activeTab, setActiveTab] = useState<'automation' | 'inventory' | 'security'>('automation');
     const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
     const [selectedEnvNames, setSelectedEnvNames] = useState<string[]>(["Non-Prod", "Prod"]);
     const [showAppForm, setShowAppForm] = useState(false);
@@ -134,7 +135,7 @@ const Dashboard = () => {
                     <a href="#" className={activeTab === 'automation' ? 'active' : ''} onClick={() => setActiveTab('automation')}>Upgrade Utility</a>
                     <a href="#" className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}>Inventory Dashboard</a>
                     <a href="#" onClick={() => setShowHistoryModal(true)}>Audit Logs</a>
-                    <a href="#">Security Scan</a>
+                    <a href="#" className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>Security Scan</a>
                 </div>
             </nav>
 
@@ -149,6 +150,8 @@ const Dashboard = () => {
                     </div>
                     <InventoryDashboard data={data} />
                 </div>
+            ) : activeTab === 'security' ? (
+                <VulnerabilityScanner />
             ) : (
                 <div className="main-body">
                     <aside className="sidebar">
