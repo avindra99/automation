@@ -1,0 +1,65 @@
+Context:
+
+These applications are installed manually via tarballs in custom directories (e.g., /apps/opt/application/mw/).
+
+System: Red Hat Enterprise Linux (RHEL) / CentOS.
+
+Constraint: You must NOT use package managers like yum, dnf, or apt. All upgrades must be done by manipulating files and processes directly.
+
+Execution: This playbook will be triggered by a Java application via ProcessBuilder, receiving variables via --extra-vars.
+
+Input Variables: The playbook must accept these variables at runtime:
+
+target_software: (String) Either "Apache" or "Java".
+
+target_version: (String) The version to install (e.g., "2.4.65" or "17.0.17").
+
+install_path: (String) The full path to the current installation (e.g., /apps/opt/mw/apache-2.4.62).
+
+repo_url: (String) The base URL of the internal Artifactory to download tarballs from.
+
+Requirements & Workflow:
+
+1. General Logic:
+
+Use block and rescue sections for error handling. If a step fails, attempt to rollback or at least fail gracefully with a clear error message.
+
+Ensure idempotency: Check if the target version is already installed/running before doing anything.
+
+2. Apache Upgrade Logic (when: target_software == 'Apache'):
+
+Discovery: Identify the service binary (usually bin/apachectl or bin/httpd).
+
+Stop: Gracefully stop the current instance. Wait for the PID to disappear.
+
+Backup: Move the existing installation directory to a backup folder (e.g., _backup_YYYYMMDD).
+
+Download & Install:
+
+Download the new tarball (httpd-{version}.tar.gz) from repo_url.
+
+Extract it to the parent directory of install_path.
+
+Rename the extracted folder to match the standard naming convention if necessary.
+
+Restore Config: Copy critical configuration files (conf/, conf.d/, ssl/) from the backup directory to the new installation directory.
+
+Start: Start the new instance.
+
+Validation: Verify the process is running and listening on its specific port.
+
+3. Java Upgrade Logic (when: target_software == 'Java'):
+
+Discovery: Locate the current java binary.
+
+Backup: Move the current JDK directory to a backup path.
+
+Install: Download and extract the new JDK tarball to the target location.
+
+Validation: Run java -version on the new binary and assert that the output matches target_version.
+
+Deliverables:
+
+The complete patch_middleware.yml file.
+
+Comments explaining the shell vs command usage.
