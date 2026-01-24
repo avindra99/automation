@@ -42,29 +42,60 @@ public class AutomationService {
                 String fromVersion = component.getCurrentVersion();
 
                 try {
-                    Thread.sleep(5000); // Simulate time taken for upgrade
+                    // Prepare command for Ansible Playbook execution
+                    // extra-vars format: key1=val1 key2=val2
+                    String extraVars = String.format(
+                            "target_software=%s target_version=%s install_path=%s repo_url=%s",
+                            component.getType(), targetVersion, component.getInstallPath(),
+                            "http://repo.verizon.com/middleware/binaries");
 
-                    // Update Database
-                    component.setCurrentVersion(targetVersion);
-                    component.setStatus("Up to Date");
+                    // Path to the enterprise master playbook
+                    String playbookPath = "ansible/site.yml";
 
-                    // Check if all components on server are up to date to update server status
-                    boolean allUpToDate = targetServer.getComponents().stream()
-                            .allMatch(c -> c.getStatus().equals("Up to Date"));
-                    if (allUpToDate) {
-                        targetServer.setStatus("Up to Date");
+                    ProcessBuilder pb = new ProcessBuilder(
+                            "ansible-playbook",
+                            playbookPath,
+                            "-i", targetServer.getHostname() + ",",
+                            "--extra-vars", extraVars);
+
+                    pb.redirectErrorStream(true);
+                    Process process = pb.start();
+
+                    // Capture output for logging/auditing
+                    java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(process.getInputStream()));
+                    StringBuilder output = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line).append("\n");
                     }
 
-                    serverRepository.save(targetServer);
+                    int exitCode = process.waitFor();
 
-                    // Log Audit
-                    auditService.log(serverIdStr, targetServer.getHostname(), componentName, fromVersion,
-                            targetVersion, "SUCCESS", "UI_USER",
-                            "Ansible playbook executed successfully. Software updated to " + targetVersion);
+                    if (exitCode == 0) {
+                        // Update Database on success
+                        component.setCurrentVersion(targetVersion);
+                        component.setStatus("Up to Date");
+
+                        boolean allUpToDate = targetServer.getComponents().stream()
+                                .allMatch(c -> "Up to Date".equals(c.getStatus()));
+                        if (allUpToDate) {
+                            targetServer.setStatus("Up to Date");
+                        }
+
+                        serverRepository.save(targetServer);
+
+                        auditService.log(serverIdStr, targetServer.getHostname(), componentName, fromVersion,
+                                targetVersion, "SUCCESS", "UI_USER",
+                                "Ansible playbook execution successful.\nOutput:\n" + output.toString());
+                    } else {
+                        throw new RuntimeException(
+                                "Ansible failed with exit code " + exitCode + ". Output:\n" + output.toString());
+                    }
 
                 } catch (Exception e) {
                     auditService.log(serverIdStr, targetServer.getHostname(), componentName, fromVersion,
-                            targetVersion, "FAILED", "UI_USER", "Error: " + e.getMessage());
+                            targetVersion, "FAILED", "UI_USER", "Error during automation: " + e.getMessage());
                 }
             }
         }

@@ -1,5 +1,6 @@
 com\verizon\upgrade\UpgradeAutomationApplication.class
 com\verizon\upgrade\model\Application.class
+com\verizon\upgrade\service\VulnerabilityService$1.class
 com\verizon\upgrade\service\AutomationService.class
 com\verizon\upgrade\repository\SoftwareTypeRepository.class
 com\verizon\upgrade\controller\ArtifactController.class
@@ -11,8 +12,12 @@ com\verizon\upgrade\repository\SoftwareArtifactRepository.class
 com\verizon\upgrade\model\SoftwareArtifact.class
 com\verizon\upgrade\controller\ApplicationController.class
 com\verizon\upgrade\service\SoftwareTypeService.class
+com\verizon\upgrade\dto\VulnerabilityResponse$VulnerabilityResponseBuilder.class
+com\verizon\upgrade\service\VulnerabilityService.class
 com\verizon\upgrade\controller\SoftwareTypeController.class
 com\verizon\upgrade\repository\AuditLogRepository.class
+com\verizon\upgrade\controller\VulnerabilityController.class
+com\verizon\upgrade\dto\VulnerabilityResponse.class
 com\verizon\upgrade\controller\UpgradeController.class
 com\verizon\upgrade\repository\ServerRepository.class
 com\verizon\upgrade\service\ArtifactService.class

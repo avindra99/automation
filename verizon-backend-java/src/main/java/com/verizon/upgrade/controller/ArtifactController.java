@@ -20,12 +20,9 @@ public class ArtifactController {
             @RequestParam("name") String name,
             @RequestParam("version") String version,
             @RequestParam("type") String type,
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file) throws Exception {
 
-        // In a real enterprise app, logic to actually upload to Artifactory
-        // (JFrog/Nexus) goes here.
-        // For now, we simulate the metadata record.
-        return artifactService.upload(name, version, type, file.getOriginalFilename(), file.getSize());
+        return artifactService.upload(name, version, type, file);
     }
 
     @GetMapping
